@@ -126,3 +126,16 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
 6. In the remote Julia REPL, type `using Juno; Juno.connect([REMOTEPORT_NUM])`
 7. A local Atom notification will pop up that "Julia is connected"
 8. The local Atom/Julia instance is now running on the EC2 cluster. You should be able to see this by evaluating `pwd()` in the local Atom instance. Note that any libraries, files, etc that you load must be on the Remote server now in this session---the remote cannot see local files.
+
+
+# Azure installation
+- SSH into an instance
+- Copy local .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
+- Install julia
+    + `wget ` the file on <https://julialang.org/downloads/index.html>
+    + `tar -xvzf [download name]`
+    + Symlink to `/usr/local/bin` by running `sudo ln -s <where you extracted the julia archive>/bin/julia /usr/local/bin/julia`. Note, you'll want to use the FULL path of the directory julia got extracted to (eg, `/home/ME/juliaarchive/bin/julia`)
+- Install build tools: `sudo apt-get build-essentials`
+- Initialize package repo with `Pkg.init()` in julia
+- Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`
+- You are good to go!
