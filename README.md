@@ -129,8 +129,10 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
 
 
 # Azure installation
+- This is an abbreviated guide to using Microsoft's Azure cloud: <https://portal.azure.com/>. Setup is quite similar to Amazon's EC2. Note that to get access to larger instances (for example, the 72 core Fs72-v2 instance), you'll need to add a "Pay-as-you-go" subscription and request a quota increase from customer support for the number of cores you can run at a time. The quota increase can take a couple of days.
+- Add a Linux instance, setting the SSH public key to the one you have on your local machine. 
 - SSH into an instance
-- Copy local .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
+- If you need to access git or other services, copy over .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
 - Install julia
     + `wget ` the file on <https://julialang.org/downloads/index.html>
     + `tar -xvzf [download name]`
@@ -139,3 +141,19 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
 - Initialize package repo with `Pkg.init()` in julia
 - Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`
 - You are good to go!
+- Note: Some Julia packages may need to be precompiled to avoid errors (I found this out when a program crashed on a call to the sparse linear algebra library).
+
+# Remote desktop (RDP) into remote machine via secure SSH tunnel
+- Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
+- On local machine, create ssh tunnel to remote with port forwarding `ssh -L [LOCALPORT]:localhost:[3389] username@remoteip`. Can do this with terminal, Bash for Windows, or Putty.
+- After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
+- Opem RDP (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
+- Install the gnome terminal `sudo apt-get gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new one
+- Fix tab-completion by following <https://www.starnet.com/xwin32kb/tab-key-not-working-when-using-xfce-desktop/>
+- Install Firefox using `sudo apt-get install firefox`
+- Installing Atom
+    + Download .deb file from <https://atom.io/>
+    + attempt to install with `sudo dpkg -i atom-amd64.deb`
+    + After error, run `sudo apt-get install -f`
+    + Then again `sudo dpkg -i atom-amd64.deb`
+    + Follow <https://github.com/atom/atom/issues/4360#issuecomment-205122828> to get Atom to run
