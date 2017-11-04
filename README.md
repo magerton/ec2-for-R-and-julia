@@ -1,12 +1,14 @@
 ---
-title: Mark's Guide to Amazon EC2 for R and Julia
+title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
 author: Mark Agerton
 date: 2017-06-12
 ---
 
-This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/or Julia. There are a few ways to get data on and off the servers in addition to the Dropbox directions provided by <http://www.louisaslett.com/RStudio_AMI/>. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning.
+This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/or Julia. There are also instructions for setting up an MS Azure instance. 
 
-The guide assumes you have some basic familiarity with using a linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)).  
+For EC2, there are a few ways to get data on and off the servers in addition to the Dropbox directions provided by <http://www.louisaslett.com/RStudio_AMI/>. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning. Azure does not have spot-pricing like Amazon, but they do have 72 core instances that can be requested (bigger than 64 cores for Amazon, but no free credits for these).
+
+The guide assumes you have some basic familiarity with using a linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal will also work nicely.
 
 If you have suggestions, pull requests & edits are welcome!!
 
@@ -103,6 +105,7 @@ If you have suggestions, pull requests & edits are welcome!!
     lftp -p 990 -u "netid@rice.edu,PASSWORD" ftps://ftp.box.com
     mirror [project_dir_on_box]   [remote_project_dir]
     ```
+6. Optionally, you can also try setting up a remote desktop connection that can be re-used. See [section below](#remote-desktop-rdp-into-remote-machine-via-secure-ssh-tunnel)
 6. Save your instance as an AMI so you can use it again!!
 7. Terminate the instance (after verifying the AMI was made) so you can get a bigger, badder, better one.
 
@@ -144,11 +147,13 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
 - Note: Some Julia packages may need to be precompiled to avoid errors (I found this out when a program crashed on a call to the sparse linear algebra library).
 
 # Remote desktop (RDP) into remote machine via secure SSH tunnel
-- Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
-- On local machine, create ssh tunnel to remote with port forwarding `ssh -L [LOCALPORT]:localhost:[3389] username@remoteip`. Can do this with terminal, Bash for Windows, or Putty.
-- After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
-- Opem RDP (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
-- Install the gnome terminal `sudo apt-get gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new one
+- Remote Desktop
+    + Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
+    + On local machine, create ssh tunnel to remote with port forwarding `ssh -L [LOCALPORT]:localhost:[3389] username@remoteip`. Can do this with terminal, Bash for Windows, or Putty.
+    + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
+    + Open Remote Desktop Connection (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
+    + To be able to reconnect to the same desktop, see <http://c-nergy.be/blog/?p=5305> and <https://askubuntu.com/questions/133343/how-do-i-set-up-xrdp-session-that-reuses-an-existing-session>. Basically, the idea is to edit the xrdp ini file to allow this. Run `sudo [gedit/pico/vim] /etc/xrdp/xrdp.ini` and change section `[xrdp1]` where it says `port=-1` to `port=ask-1`. When logging in for the first time, leave the port as `-1` and note the port number you get (will default to `5910`). Then on subsquent logins, change the port to whater the previous one was (I it *should* default to `5910`). Sessions seem to persist even when the SSH tunnel is closed.
+- Install the gnome terminal `sudo apt-get gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new terminal window
 - Fix tab-completion by following <https://www.starnet.com/xwin32kb/tab-key-not-working-when-using-xfce-desktop/>
 - Install Firefox using `sudo apt-get install firefox`
 - Installing Atom
