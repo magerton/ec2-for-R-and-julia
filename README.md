@@ -140,9 +140,11 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
     + `wget ` the file on <https://julialang.org/downloads/index.html>
     + `tar -xvzf [download name]`
     + Symlink to `/usr/local/bin` by running `sudo ln -s <where you extracted the julia archive>/bin/julia /usr/local/bin/julia`. Note, you'll want to use the FULL path of the directory julia got extracted to (eg, `/home/ME/juliaarchive/bin/julia`)
-- Install build tools: `sudo apt-get build-essentials`
+- Update pkgs `sudo apt-get update`
+- Install build tools: `sudo apt-get install build-essential`
 - Initialize package repo with `Pkg.init()` in julia
-- Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`
+- Install `sudo apt-get install hdf5-tools` from command line
+- Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.
 - You are good to go!
 - Note: Some Julia packages may need to be precompiled to avoid errors (I found this out when a program crashed on a call to the sparse linear algebra library).
 
@@ -153,7 +155,8 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
     + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
     + Open Remote Desktop Connection (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
     + To be able to reconnect to the same desktop, see <http://c-nergy.be/blog/?p=5305> and <https://askubuntu.com/questions/133343/how-do-i-set-up-xrdp-session-that-reuses-an-existing-session>. Basically, the idea is to edit the xrdp ini file to allow this. Run `sudo [gedit/pico/vim] /etc/xrdp/xrdp.ini` and change section `[xrdp1]` where it says `port=-1` to `port=ask-1`. When logging in for the first time, leave the port as `-1` and note the port number you get (will default to `5910`). Then on subsquent logins, change the port to whater the previous one was (I it *should* default to `5910`). Sessions seem to persist even when the SSH tunnel is closed.
-- Install the gnome terminal `sudo apt-get gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new terminal window
+- Install the gnome terminal `sudo apt-get install gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new terminal window
+- Install unzip (at least if on Azure): `sudo apt-get install unzip` so that Julia can build `HttpParser` for Atom
 - Fix tab-completion by following <https://www.starnet.com/xwin32kb/tab-key-not-working-when-using-xfce-desktop/>
 - Install Firefox using `sudo apt-get install firefox`
 - Installing Atom
@@ -161,4 +164,10 @@ You can use local instance of Atom & remote server. The [Docs](http://docs.junol
     + attempt to install with `sudo dpkg -i atom-amd64.deb`
     + After error, run `sudo apt-get install -f`
     + Then again `sudo dpkg -i atom-amd64.deb`
-    + Follow <https://github.com/atom/atom/issues/4360#issuecomment-205122828> to get Atom to run
+    + Follow <https://github.com/atom/atom/issues/4360#issuecomment-205122828> to get Atom to run. You can find the file with 
+        ```bash
+        dpkg -L libxcb1 # to find the file
+        cd /usr/share/atom
+        cp /usr/lib/x86_64-linux-gnu/libxcb.so.1
+        sudo sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' libxcb.so.1
+        ```
