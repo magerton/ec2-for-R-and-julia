@@ -121,7 +121,6 @@ If you have suggestions, pull requests & edits are welcome!!
         sudo sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' libxcb.so.1
         ```
 
-
 # Subsequent work using terminal or REPL
 
 1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
@@ -135,3 +134,23 @@ If you have suggestions, pull requests & edits are welcome!!
     lftp -p 990 -u "netid@rice.edu,PASSWORD" ftps://ftp.box.com
     mirror [project_dir_on_box]   [remote_project_dir]
     ```
+
+# X11 forwarding and OS X
+
+The above instructions are for Windows. Can try using X11 on a Mac or Linux box
+
+- Install `xpra` locally on OS X using Homebrew. See <https://github.com/google/homebrew-xpra>
+- Install `xpra` and `winswitch` on remote by following <http://winswitch.org/downloads/debian-repository.html?dist_select=xenial>. After installing `winswitch` as per direcions, run `apt-get install xpra` to install `xpra` and run `exit` to exit root.
+>>>>>>> Stashed changes
+
+
+# Using EFS
+
+- Add an EFS instance (encrypted?)
+- Install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
+- `apt-get install libssl-dev`
+- Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
+- **Make sure that EFS and EC2 instances are in the same security group, and that the SG has an inbound rule allowing NFS traffic from the same SG** (currently this is group 4)
+- `sudo mount -t efs FILESYSTEMID:/ efs`
+- add line to `/etc/fstab`: `fs-59778a40:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
+
