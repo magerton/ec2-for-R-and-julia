@@ -154,3 +154,9 @@ The above instructions are for Windows. Can try using X11 on a Mac or Linux box
 - `sudo mount -t efs FILESYSTEMID:/ efs`
 - add line to `/etc/fstab`: `fs-59778a40:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
 
+# Notifications when usage falls
+
+Sometimes things error out... To be notified when CPU utilization falls,
+
+- Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
+- Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= 50 pct for less than 5 min.
