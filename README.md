@@ -160,3 +160,9 @@ Sometimes things error out... To be notified when CPU utilization falls,
 
 - Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
 - Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= 50 pct for less than 5 min.
+
+# Using nohup
+
+```bash
+nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/[FILENAMESTART]-$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)_${MYIP}.out 2>&1 &
+```
