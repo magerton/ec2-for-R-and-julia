@@ -164,5 +164,5 @@ Sometimes things error out... To be notified when CPU utilization falls,
 # Using nohup
 
 ```bash
-nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/[FILENAMESTART]-$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)_${MYIP}.out 2>&1 &
+nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
 ```
