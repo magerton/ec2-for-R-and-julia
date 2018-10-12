@@ -177,12 +177,11 @@ If you have suggestions, pull requests & edits are welcome!
     mirror [project_dir_on_box]   [remote_project_dir]
     ```
 
-# X11 forwarding and OS X
+## X11 and macOS
 
-The above instructions are for Windows. Can try using X11 on a Mac or Linux box
-
-- Install `xpra` locally on OS X using Homebrew. See <https://github.com/google/homebrew-xpra>
-- Install `xpra` and `winswitch` on remote by following <http://winswitch.org/downloads/debian-repository.html?dist_select=xenial>. After installing `winswitch` as per direcions, run `apt-get install xpra` to install `xpra` and run `exit` to exit root.
+If required, X11 can be easily used to run remote GUI applications on macOS.
+- Install [XQuartz](https://www.xquartz.org/)
+- Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
 
 # Using EFS
 
