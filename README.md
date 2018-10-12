@@ -41,32 +41,26 @@ If you have suggestions, pull requests & edits are welcome!
 
 ### Git
 1. Install Git
-    ```
+    ```shell
     yum install git
     ```
+2. To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen`. If you do have one, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
+    - On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
+    - Use `sftp` to put your `github_rsa` private key on the remote server.
+    - Exit `sftp`, and then `ssh` back into the server.
+    - Move the private key into .ssh: `mv github_rsa .ssh/`.
+    - Check that the permissions are correct: `ls -al .ssh`.
 
 ### Git LFS
+1. See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
+    ```shell
+        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+        sudo apt-get install git-lfs
+        git lfs install  # only run once for initial install
+    ```
+
 ### LFTP
-1. On the remote, the directory `~/.ssh` has a file `authorized_keys`, which contains the public key counterpart for your private (local) `.pem` key. You'll want to add a github private key to this folder, and also deposit `authorized_keys` and your github private key in other uses (such as `rstudio`) with appropriate permissions. `ssh-copy-id` might be a better option to put a public key in another user's folder.
-    - On the local machine, navigate to your directory w/ relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
-    - Use `sftp` to put your `github_rsa` private key (and possibly also `config`) on the remote server
-    - Exit `sftp`, and then `ssh` into the remote
-    - Move the private key into .ssh: `mv github_rsa .ssh/`
-    - Check that the permissions are correct: `ls -al .ssh`. See [stackexchange](https://unix.stackexchange.com/questions/210228/add-a-user-wthout-password-but-with-ssh-and-public-key).
-    - You may need to make a new config file:
-        ```shell
-        echo IdentityFile ~/.ssh/github_rsa > .ssh/config
-        chown ubuntu .ssh/config
-        chmod 700 .ssh/config
-        ```
-    - If you need to access git or other services, copy over .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
-<!--     - Copy contents of .ssh to remote user `rstudio` and set up. 
-        ```shell
-        sudo cp -r .ssh ../rstudio/.ssh
-        sudo ls -al ../rstudio/.ssh
-        sudo chown -R rstudio:rstudio ../rstudio/.ssh
-        sudo chmod 700 ../rstudio/.ssh
-        ```--->
+
 2. Install needed programs
     - Add `lftp` to machine to connect to Box.net accounts.
         ```shell
@@ -74,12 +68,7 @@ If you have suggestions, pull requests & edits are welcome!
         sudo apt-get install lftp
         ```
     - Add `git-lfs`.
-        + See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
-        ```shell
-        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-        sudo apt-get install git-lfs
-        git lfs install  # only run once for initial install
-        ```
+        + 
 
 # Julia setup
 
