@@ -2,8 +2,8 @@
 
 | Author | Date |
 | --- | --- |
-| Mark Agerton | Date: 2017-06-12 |
-| Arnon Erba | Date: 2018-10-12 |
+| Mark Agerton | 2017-06-12 |
+| Arnon Erba | 2018-10-12 |
 
 ## Purpose
 
@@ -13,24 +13,27 @@ The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating t
 
 If you have suggestions, pull requests & edits are welcome!
 
-# Launching an EC2 instance
+## Launching an EC2 instance
 
-1. Sign up for an Amazon AWS account. Sign up at github.com for an education pack if eligible and you may get some free Amazon AWS credits.
+1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
+2. Spin up an Amazon Linux 2 instance. The "compute optimized" can be used with Spot pricing and provides sufficient resources depending on the tier you choose. You should not need more than 16GB of storage.
+3. Create a new SSH key pair, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
+    - **Note:** Your private key must be kept secure. In conjuction with your public key, which is stored on your EC2 instance, your private key allows you to log in to your server.
+    - Private keys may take several different forms:
+        + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
+        + `*.key` - Alternate file extension for a PEM file that only contains a private key.
+        + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
+        - Private keys may be stored anywhere, but by convention they are placed in the `~/.ssh` directory. Either `0400` or `0600` are [appropriate permissions](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder) for your private keys. The `~/.ssh` directory should generally have `0700` permissions.
+    - Public keys may utilize the `*.pub` extension, but when copied to a server are concatenated onto your remote `~/.ssh/authorized_keys` file. The presence of your public key in this file grants you SSH access to the server.
+4. Connect to your EC2 instance via SSH.
+    - `ssh ec2-user@ip-address-or-hostname -i /path/to/privatekey.pem`
+
 2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
     - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
         ```
         IdentityFile ~/.ssh/github_rsa
         IdentityFile ~/.ssh/Magerton_Key_Pair.pem
         ```
-    - Make sure permissions are correct for SSH folder & keys. See [Stackexchange](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). If using symlinked directory in Windows Subsystem for Linux (WSL) on Windows 10, might need to change permissions to read only on Windows side if can't do this in WSL.
-    - What files are:
-        + `github_rsa` and `*.pem` are private keys. KEEP SECURE--these are like your password
-        + `*.ppk` is PuTTy version of private key ([StackOverflow](https://stackoverflow.com/questions/20367694/whats-the-difference-between-ppk-and-pem-where-pem-is-stored-in-amazons-ec2))
-        + `*.pub` files are public keys. These are placed on server-side and used to verify that your private key is correct.
-3. Spin up an Ubuntu 16.04  or 18.04 image.  ~~Go to <http://www.louisaslett.com/RStudio_AMI/> and click on the AMI you want (first time only to set up)~~ 
-    - If permanent setup, use a smaller, cheaper one to get set up. You can save money by using a Spot instance, but could get booted if your maximum willingness to pay (bid) is too low. Otherwise, get as much power as you need.
-    - Make sure that you have enough drive storage (16Gb should be fine), and that the HTTP Protocol (port 80) is open in addition to SSH (port 22).
-5. SSH into the instance (right click on it & hit "connect" to get the terminal command, should be something like `ssh ubuntu@ec2-54-196-121-83.compute-1.amazonaws.com`). Note that the RStudio AMI has superuser `ubuntu`, not `root` as Connect page suggests.
 
 # Software installation
 
