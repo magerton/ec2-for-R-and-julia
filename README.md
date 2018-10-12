@@ -1,7 +1,7 @@
 ---
-title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
-author: Mark Agerton
-date: 2017-06-12
+Title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
+Author: Mark Agerton
+Date: 2018-10-12
 ---
 
 This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/or Julia. There are also instructions for setting up an MS Azure instance. 
