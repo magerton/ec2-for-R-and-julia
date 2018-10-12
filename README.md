@@ -1,10 +1,6 @@
-# EC2 for R and Julia
+# Julia and R on Amazon EC2
 
----
-Title: Julia and R on Amazon EC2
-Author: Mark Agerton
-Date: 2018-10-12
----
+| Author: Mark Agerton | Date: 2018-10-12 |
 
 ## Purpose
 
