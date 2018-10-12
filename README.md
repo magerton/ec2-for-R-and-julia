@@ -93,6 +93,21 @@ If you have suggestions, pull requests & edits are welcome!
     ```shell
     tar -xzvf v1.0.1.tar.gz
     mv julia-1.0.1/ /usr/local/julia-1.0.1/
+    cd /usr/local/julia-1.0.1/
+    ```
+- (Optional) Enable MKL in Julia
+    ```shell
+    source /opt/intel/bin/compilervars.sh intel64
+    echo "USE_INTEL_MKL = 1" > Make.user
+    ```
+- Use `make` to compile Julia
+    ```shell
+    ./contrib/download_cmake.sh # force Julia to build an updated version of cmake
+    make -j4 # where '4' is the number of available CPU threads
+    ```
+- Symlink Julia to `/usr/local/bin`
+    ```shell
+    ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
     ```
 
 # Julia setup
