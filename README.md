@@ -66,7 +66,15 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 
 ### Intel MKL
-
+- Intel MKL is [available for free](https://software.intel.com/en-us/articles/how-to-get-intel-mklippdaal) from Intel. The [yum repository](https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-yum-repo) can be easily added on an Amazon Linux 2 system:
+    ```shell
+    sudo yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
+    sudo rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+    ```
+- Multiple version of MKL are available, but the latest can be easily installed:
+    ```shell
+    sudo yum install intel-mkl
+    ```
 
 # Julia setup
 
