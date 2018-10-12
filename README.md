@@ -25,14 +25,14 @@ If you have suggestions, pull requests & edits are welcome!
         + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
     - Public keys may utilize the `*.pub` extension, but when copied to a server are concatenated onto your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you SSH access to the server.
 4. Connect to your EC2 instance via SSH by running  `ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem`. If this is cumbersome, you can simplify the process:
-        1. Create a `~/.ssh/config` file with the following format:
+        - Create a `~/.ssh/config` file with the following format:
         ```
         Host your_server_name
             HostName your_ip_address_or_hostname
             User ec2-user
             IdentityFile ~/.ssh/your_private_key.pem
         ```
-        2. Run `ssh your_server_name`
+        - SSH into the server with `ssh your_server_name`. 
 
 # Software installation
 
