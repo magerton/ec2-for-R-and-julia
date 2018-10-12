@@ -1,5 +1,5 @@
 ---
-Title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
+Title: Julia and R on Amazon EC2
 Author: Mark Agerton
 Date: 2018-10-12
 ---
@@ -8,13 +8,13 @@ This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/
 
 For EC2, there are a few ways to get data on and off the servers in addition to the Dropbox directions provided by <http://www.louisaslett.com/RStudio_AMI/>. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning. Azure does not have spot-pricing like Amazon.
 
-The guide assumes you have some basic familiarity with using a linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal will also work nicely.
+The guide assumes you have some basic familiarity with using a Linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal will also work nicely.
 
 If you have suggestions, pull requests & edits are welcome!!
 
 # Launching an EC2 instance
 
-1. Sign up for Amazon AWS account. Sign up at github.com for an education pack if eligible and you may get some free Amazon AWS credits.
+1. Sign up for an Amazon AWS account. Sign up at github.com for an education pack if eligible and you may get some free Amazon AWS credits.
 2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
     - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
         ```
@@ -141,8 +141,6 @@ The above instructions are for Windows. Can try using X11 on a Mac or Linux box
 
 - Install `xpra` locally on OS X using Homebrew. See <https://github.com/google/homebrew-xpra>
 - Install `xpra` and `winswitch` on remote by following <http://winswitch.org/downloads/debian-repository.html?dist_select=xenial>. After installing `winswitch` as per direcions, run `apt-get install xpra` to install `xpra` and run `exit` to exit root.
->>>>>>> Stashed changes
-
 
 # Using EFS
 
