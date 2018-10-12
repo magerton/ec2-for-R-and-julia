@@ -54,9 +54,9 @@ If you have suggestions, pull requests & edits are welcome!
 ### Git LFS
 1. See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
     ```shell
-        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-        sudo apt-get install git-lfs
-        git lfs install  # only run once for initial install
+        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
+        sudo yum install git-lfs
+        git lfs install # only run once for initial install
     ```
 
 ### LFTP
