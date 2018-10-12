@@ -42,7 +42,7 @@ If you have suggestions, pull requests & edits are welcome!
 ### Git
 1. Install Git
     ```shell
-    yum install git
+    sudo yum install git
     ```
 2. To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen`. If you do have one, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
     - On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
@@ -60,15 +60,10 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 
 ### LFTP
-
-2. Install needed programs
-    - Add `lftp` to machine to connect to Box.net accounts.
-        ```shell
-        sudo apt-get update
-        sudo apt-get install lftp
-        ```
-    - Add `git-lfs`.
-        + 
+1. Install LFTP
+    ```shell
+    sudo yum install lftp
+    ```
 
 # Julia setup
 
