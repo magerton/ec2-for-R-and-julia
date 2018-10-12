@@ -27,7 +27,7 @@ If you have suggestions, pull requests & edits are welcome!
         + If you are manually copying a new public key to an instance you already have access to, use the `ssh-copy-id` command [(note)](https://askubuntu.com/questions/4830/easiest-way-to-copy-ssh-keys-to-another-machine). Otherwise, the AWS setup guide handles this process for you.
 4. Connect to your EC2 instance via SSH. You can find the IP address/hostname of your instance in your AWS dashboard.
     - Append the following to your local `~/.ssh/config` file, substituting the appropriate values as necessary:
-        ```
+        ```shell
         Host your_server_name
             HostName your_ip_address_or_hostname
             User ec2-user
@@ -40,30 +40,33 @@ If you have suggestions, pull requests & edits are welcome!
 ## Software installation
 
 ### Git
-1. Install Git
+- Install Git
     ```shell
     sudo yum install git
     ```
-2. To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen` and add the public key to your GitHub account. If you already have an authorized key pair, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
-    - On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
-    - Use `sftp` to put your `github_rsa` private key on the remote server.
-    - Exit `sftp`, and then `ssh` back into the server.
-    - Move the private key into .ssh: `mv github_rsa .ssh/`.
-    - Check that the permissions are correct: `ls -al .ssh`.
+- To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen` and add the public key to your GitHub account. If you already have an authorized key pair, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
+    + On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
+    + Use `sftp` to put your `github_rsa` private key on the remote server.
+    + Exit `sftp`, and then `ssh` back into the server.
+    + Move the private key into .ssh: `mv github_rsa .ssh/`.
+    + Check that the permissions are correct: `ls -al .ssh`.
 
 ### Git LFS
-1. See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
+- See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
     ```shell
-        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
-        sudo yum install git-lfs
-        git lfs install # only run once for initial install
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
+    sudo yum install git-lfs
+    git lfs install # only run once for initial install
     ```
 
 ### LFTP
-1. Install LFTP to connect to Box
+- Install LFTP to connect to Box accounts.
     ```shell
     sudo yum install lftp
     ```
+
+### Intel MKL
+
 
 # Julia setup
 
