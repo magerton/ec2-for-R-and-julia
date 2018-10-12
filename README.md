@@ -162,13 +162,13 @@ If you have suggestions, pull requests & edits are welcome!
         sudo sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' libxcb.so.1
         ```
 
-# Subsequent work using terminal or REPL
+## Subsequent work using terminal or REPL
 
 1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
 2. Once your AMI is running (can take a bit), SSH into it & get to work or point your browser to the relevant IP address.
 3. To save intermediate log-files, you could use a `cron` job to run a script (named like `myscript.sh`, has a shebang w/ your shell path at the top--google it) that would ssh into the server & pipe log file to your home computer. (Might also be something as simple as a command -- no script needed) See <https://www.cyberciti.biz/faq/howto-use-tar-command-through-network-over-ssh-session/>
 
-# Using LFTP
+## Using LFTP
 
 - Alternately, transfer using `lftp` and Box.net. Note that special characters in password may have to be escaped or translated to HTML.
     ```shell
@@ -182,7 +182,7 @@ If required, X11 can be easily used to run remote GUI applications on macOS.
 - Install [XQuartz](https://www.xquartz.org/)
 - Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
 
-# Using EFS
+## Using EFS
 
 - Add an EFS instance (encrypted?)
 - Install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
@@ -192,14 +192,14 @@ If required, X11 can be easily used to run remote GUI applications on macOS.
 - `sudo mount -t efs FILESYSTEMID:/ efs`
 - add line to `/etc/fstab`: `fs-59778a40:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
 
-# Notifications when usage falls
+## Notifications when usage falls
 
 Sometimes things error out... To be notified when CPU utilization falls,
 
 - Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
 - Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= 50 pct for less than 5 min.
 
-# Using nohup
+## Using nohup
 
 ```bash
 nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
