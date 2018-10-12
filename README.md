@@ -26,16 +26,16 @@ If you have suggestions, pull requests & edits are welcome!
     - Public keys may utilize the `*.pub` extension, but when copied to a server are concatenated onto your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you SSH access to the server.
 4. Connect to your EC2 instance via SSH.
     - Method 1:
-        + `ssh ec2-user@ip-address-or-hostname -i ~/.ssh/privatekey.pem`
+        1. Run `ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem`
     - Method 2:
-        + Create a `~/.ssh/config` file with the following format:
+        1. Create a `~/.ssh/config` file with the following format:
         ```
-        Host my-ec2-server
-            HostName ip-address-or-hostname
+        Host your_server_name
+            HostName your_ip_address_or_hostname
             User ec2-user
-            IdentityFile ~/.ssh/privatekey.pem
+            IdentityFile ~/.ssh/your_private_key.pem
         ```
-        + `ssh my-ec2-server`
+        2. Run `ssh your_server_name`
 
 # Software installation
 
