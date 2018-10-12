@@ -24,7 +24,7 @@ If you have suggestions, pull requests & edits are welcome!
         + `*.key` - Alternate file extension for a PEM file only containing a private key.
         + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
     - Public keys utilize the `*.pub` extension, but when copied to a server are appended to your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you access to the server.
-        + If you are manually copying a new public key to an instance you already have access to, use the `ssh-copy-id` command [(note)](https://askubuntu.com/questions/4830/easiest-way-to-copy-ssh-keys-to-another-machine).
+        + If you are manually copying a new public key to an instance you already have access to, use the `ssh-copy-id` command [(note)](https://askubuntu.com/questions/4830/easiest-way-to-copy-ssh-keys-to-another-machine). Otherwise, the AWS setup guide handles this process for you.
 4. Connect to your EC2 instance via SSH. You can find the IP address/hostname of your instance in your AWS dashboard.
     - Append the following to your local `~/.ssh/config` file, substituting the appropriate values as necessary:
         ```
@@ -37,8 +37,16 @@ If you have suggestions, pull requests & edits are welcome!
     - Alternatively, you can skip the instructions above and connect directly with:
         + `ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem`.
 
-# Software installation
+## Software installation
 
+### Git
+1. Install Git
+    ```
+    yum install git
+    ```
+
+### Git LFS
+### LFTP
 1. On the remote, the directory `~/.ssh` has a file `authorized_keys`, which contains the public key counterpart for your private (local) `.pem` key. You'll want to add a github private key to this folder, and also deposit `authorized_keys` and your github private key in other uses (such as `rstudio`) with appropriate permissions. `ssh-copy-id` might be a better option to put a public key in another user's folder.
     - On the local machine, navigate to your directory w/ relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
     - Use `sftp` to put your `github_rsa` private key (and possibly also `config`) on the remote server
