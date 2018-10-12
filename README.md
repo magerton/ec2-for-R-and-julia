@@ -115,9 +115,7 @@ If you have suggestions, pull requests & edits are welcome!
     LinearAlgebra.BLAS.vendor()
     ```
 
-
----
-
+### Julia Packages
 - Open up a julia prompt and install packages into the default folder
 
     ```bash
@@ -137,6 +135,8 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 - ~~Initialize package repo with `Pkg.init()` in julia~~
 - ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~
+
+### R ??
 
 ## Set up RDP for Remote Desktop Over SSH (untested on Amazon Linux)
 
