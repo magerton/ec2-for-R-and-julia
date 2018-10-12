@@ -76,6 +76,23 @@ If you have suggestions, pull requests & edits are welcome!
     sudo yum install intel-mkl
     ```
 
+### Julia (Build From Source)
+- To enable extra features (like MKL integration), we need to build Julia from source. First, install the necessary dependencies:
+    ```shell
+    sudo yum groupinstall 'Development Tools'
+    sudo yum install make gcc gcc-c++ libatomic python gcc-gfortran perl wget m4 patch pkgconfig
+    sudo yum autoremove cmake # default version is too old
+    ```
+- Download the Julia source code:
+    ```shell
+    wget https://github.com/JuliaLang/julia/archive/v1.0.1.tar.gz
+    ```
+- Extract Julia source code tarball and move to `/usr/local`:
+    ```shell
+    tar -xzvf v1.0.1.tar.gz
+    mv julia-1.0.1/ /usr/local/julia-1.0.1/
+    ```
+
 # Julia setup
 
 - Install julia
