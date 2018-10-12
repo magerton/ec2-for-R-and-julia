@@ -13,7 +13,7 @@ The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating t
 
 If you have suggestions, pull requests & edits are welcome!
 
-## Launching an EC2 instance
+## Launch an EC2 Instance
 
 1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
 2. Spin up an Amazon Linux 2 instance. The "compute optimized" tier is recommended, and you should not need more than 16GB of storage.
@@ -39,7 +39,7 @@ If you have suggestions, pull requests & edits are welcome!
         ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem
         ```
 
-## Software installation
+## Install Software
 
 ### Git
 - Install Git
@@ -109,14 +109,14 @@ If you have suggestions, pull requests & edits are welcome!
     ```shell
     ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
     ```
-- Test MKL Integration:
+- Test MKL Integration in a Julia Prompt:
     ```julia
     using LinearAlgebra
     LinearAlgebra.BLAS.vendor()
     ```
 
 
-
+---
 
 - Open up a julia prompt and install packages into the default folder
 
@@ -138,7 +138,7 @@ If you have suggestions, pull requests & edits are welcome!
 - ~~Initialize package repo with `Pkg.init()` in julia~~
 - ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~
 
-# Setting up GUI/ remote desktop (RDP) for remote machine via secure SSH tunnel
+## Set up RDP for Remote Desktop Over SSH (untested on Amazon Linux)
 
 - Remote Desktop
     + Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
