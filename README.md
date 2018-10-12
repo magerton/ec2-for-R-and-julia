@@ -17,7 +17,7 @@ If you have suggestions, pull requests & edits are welcome!
 
 1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
 2. Spin up an Amazon Linux 2 instance. The "compute optimized" tier is recommended, and you should not need more than 16GB of storage.
-3. Create a new SSH key pair, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
+3. Create a new SSH key pair when prompted, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
     - **Your private key must be kept secure**. By convention it should be placed in your local `~/.ssh` directory and be protected by either `0400` or `0600` permissions [(note)](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). Your `~/.ssh` directory should have `0700` permissions.
     - Private keys may take several different forms:
         + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
@@ -25,14 +25,17 @@ If you have suggestions, pull requests & edits are welcome!
         + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
     - Public keys may utilize the `*.pub` extension, but when copied to a server are concatenated onto your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you SSH access to the server.
 4. Connect to your EC2 instance via SSH.
-    - `ssh ec2-user@ip-address-or-hostname -i ~/.ssh/privatekey.pem`
-
-2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
-    - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
+    - Method 1:
+        + `ssh ec2-user@ip-address-or-hostname -i ~/.ssh/privatekey.pem`
+    - Method 2:
+        + Create a `~/.ssh/config` file with the following format:
         ```
-        IdentityFile ~/.ssh/github_rsa
-        IdentityFile ~/.ssh/Magerton_Key_Pair.pem
+        Host my-ec2-server
+            HostName ip-address-or-hostname
+            User ec2-user
+            IdentityFile ~/.ssh/privatekey.pem
         ```
+        + `ssh my-ec2-server`
 
 # Software installation
 
