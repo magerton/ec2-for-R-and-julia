@@ -44,7 +44,7 @@ If you have suggestions, pull requests & edits are welcome!
     ```shell
     sudo yum install git
     ```
-2. To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen`. If you do have one, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
+2. To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen` and add the public key to your GitHub account. If you already have an authorized key pair, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
     - On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
     - Use `sftp` to put your `github_rsa` private key on the remote server.
     - Exit `sftp`, and then `ssh` back into the server.
@@ -60,7 +60,7 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 
 ### LFTP
-1. Install LFTP
+1. Install LFTP to connect to Box
     ```shell
     sudo yum install lftp
     ```
