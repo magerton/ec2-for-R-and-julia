@@ -16,16 +16,16 @@ If you have suggestions, pull requests & edits are welcome!
 ## Launching an EC2 instance
 
 1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
-2. Spin up an Amazon Linux 2 instance. The "compute optimized" can be used with Spot pricing and provides sufficient resources depending on the tier you choose. You should not need more than 16GB of storage.
+2. Spin up an Amazon Linux 2 instance. The "compute optimized" tier is recommended, and you should not need more than 16GB of storage.
 3. Create a new SSH key pair, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
-    - **Note: Your private key must be kept secure**. By convention it should be placed in your local `~/.ssh` directory and be protected by either `0400` or `0600` permissions [note](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). Your `~/.ssh` directory should have `0700` permissions.
+    - **Your private key must be kept secure**. By convention it should be placed in your local `~/.ssh` directory and be protected by either `0400` or `0600` permissions [(note)](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). Your `~/.ssh` directory should have `0700` permissions.
     - Private keys may take several different forms:
         + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
         + `*.key` - Alternate file extension for a PEM file only containing a private key.
         + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
     - Public keys may utilize the `*.pub` extension, but when copied to a server are concatenated onto your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you SSH access to the server.
 4. Connect to your EC2 instance via SSH.
-    - `ssh ec2-user@ip-address-or-hostname -i /path/to/privatekey.pem`
+    - `ssh ec2-user@ip-address-or-hostname -i ~/.ssh/privatekey.pem`
 
 2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
     - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
