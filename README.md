@@ -18,7 +18,7 @@ If you have suggestions, pull requests & edits are welcome!
 1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
 2. Spin up an Amazon Linux 2 instance. The "compute optimized" can be used with Spot pricing and provides sufficient resources depending on the tier you choose. You should not need more than 16GB of storage.
 3. Create a new SSH key pair, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
-    - **Note:** Your private key must be kept secure. In conjuction with your public key, which is stored on your EC2 instance, your private key allows you to log in to your server. Private keys may be stored anywhere, but by convention they are placed in the `~/.ssh` directory. Either `0400` or `0600` are [appropriate permissions](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder) for your private keys. The `~/.ssh` directory should generally have `0700` permissions.
+    - **Note: Your private key must be kept secure**. By convention they should be placed in your local `~/.ssh` directory. Either `0400` or `0600` are [appropriate permissions](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder) for your private keys, while the `~/.ssh` directory should generally have `0700` permissions.
     - Private keys may take several different forms:
         + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
         + `*.key` - Alternate file extension for a PEM file only containing a private key.
