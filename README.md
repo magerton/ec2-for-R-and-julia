@@ -9,7 +9,7 @@
 
 This guide explains how to set up a simple Amazon Linux 2 instance on EC2 for use with R and Julia. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning.
 
-The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal is also a good choice for Windows. MacOS users may make use of the built-in MacOS terminal.
+The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal is also a good choice for Windows. macOS users may make use of the built-in macOS terminal.
 
 If you have suggestions, pull requests & edits are welcome!
 
