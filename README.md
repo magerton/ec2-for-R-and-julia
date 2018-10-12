@@ -79,7 +79,7 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 
 ### Julia (Build From Source)
-- To enable extra features (like MKL integration), we need to build Julia from source. First, install the necessary dependencies:
+- First, install the necessary dependencies:
     ```shell
     sudo yum groupinstall 'Development Tools'
     sudo yum install make gcc gcc-c++ libatomic python gcc-gfortran perl wget m4 patch pkgconfig
