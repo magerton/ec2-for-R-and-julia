@@ -1,6 +1,9 @@
 # Julia and R on Amazon EC2
 
-| Author: Mark Agerton | Date: 2018-10-12 |
+| Author | Date |
+| --- | --- |
+| Mark Agerton | Date: 2017-06-12 |
+| Arnon Erba | Date: 2018-10-12 |
 
 ## Purpose
 
