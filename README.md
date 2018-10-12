@@ -95,30 +95,29 @@ If you have suggestions, pull requests & edits are welcome!
     mv julia-1.0.1/ /usr/local/julia-1.0.1/
     cd /usr/local/julia-1.0.1/
     ```
-- (Optional) Enable MKL in Julia
+- (Optional) Enable MKL in Julia:
     ```shell
     source /opt/intel/bin/compilervars.sh intel64
     echo "USE_INTEL_MKL = 1" > Make.user
     ```
-- Use `make` to compile Julia
+- Use `make` to compile Julia:
     ```shell
     ./contrib/download_cmake.sh # force Julia to build an updated version of cmake
     make -j4 # where '4' is the number of available CPU threads
     ```
-- Symlink Julia to `/usr/local/bin`
+- Symlink Julia to `/usr/local/bin`:
     ```shell
     ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
     ```
+- Test MKL Integration:
+    ```julia
+    using LinearAlgebra
+    LinearAlgebra.BLAS.vendor()
+    ```
 
-# Julia setup
 
-- Install julia
-    + `wget ` the file on <https://julialang.org/downloads/index.html>
-    + `tar -xvzf [download name]`
-    + Symlink to `/usr/local/bin` by running `sudo ln -s <where you extracted the julia archive>/bin/julia /usr/local/bin/julia`. Note, you'll want to use the FULL path of the directory julia got extracted to (eg, `/home/ME/juliaarchive/bin/julia`)
-- Update pkgs `sudo apt-get update`
-- Install build tools: `sudo apt-get install build-essential`
-- Install `sudo apt-get install hdf5-tools` from command line
+
+
 - Open up a julia prompt and install packages into the default folder
 
     ```bash
