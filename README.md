@@ -1,9 +1,8 @@
 # Julia and R on Amazon EC2
 
-| Author | Date |
+| Authors | Date |
 | --- | --- |
-| Mark Agerton | 2017-06-12 |
-| Arnon Erba | 2018-10-12 |
+| Mark Agerton & Arnon Erba | 2018-10-12 |
 
 ## Purpose
 
@@ -109,7 +108,7 @@ If you have suggestions, pull requests & edits are welcome!
     ```shell
     ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
     ```
-- Test MKL Integration in a Julia Prompt:
+- Test MKL Integration in a Julia prompt:
     ```julia
     using LinearAlgebra
     LinearAlgebra.BLAS.vendor()
