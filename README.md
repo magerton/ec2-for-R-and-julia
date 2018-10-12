@@ -35,7 +35,9 @@ If you have suggestions, pull requests & edits are welcome!
         ```
     - Then, SSH into the server with `ssh your_server_name`. 
     - Alternatively, you can skip the instructions above and connect directly with:
-        + `ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem`.
+        ```shell
+        ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem
+        ```
 
 ## Software installation
 
