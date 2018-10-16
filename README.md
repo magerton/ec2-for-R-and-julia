@@ -72,7 +72,7 @@ If you have suggestions, pull requests & edits are welcome!
     sudo yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
     sudo rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
     ```
-- Multiple version of MKL are available, but the latest can be easily installed:
+- Multiple versions of MKL are available, but the latest can be easily installed:
     ```shell
     sudo yum install intel-mkl
     ```
