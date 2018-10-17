@@ -1,81 +1,120 @@
----
-title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
-author: Mark Agerton
-date: 2017-06-12
----
+# Julia and R on Amazon EC2
 
-This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/or Julia. There are also instructions for setting up an MS Azure instance. 
+| Authors | Date |
+| --- | --- |
+| Mark Agerton & Arnon Erba | 2018-10-12 |
 
-For EC2, there are a few ways to get data on and off the servers in addition to the Dropbox directions provided by <http://www.louisaslett.com/RStudio_AMI/>. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning. Azure does not have spot-pricing like Amazon.
+## Purpose
 
-The guide assumes you have some basic familiarity with using a linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal will also work nicely.
+This guide explains how to set up a simple Amazon Linux 2 instance on EC2 for use with R and Julia. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning.
 
-If you have suggestions, pull requests & edits are welcome!!
+The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal is also a good choice for Windows. macOS users may make use of the built-in macOS terminal.
 
-# Launching an EC2 instance
+If you have suggestions, pull requests & edits are welcome!
 
-1. Sign up for Amazon AWS account. Sign up at github.com for an education pack if eligible and you may get some free Amazon AWS credits.
-2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
-    - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
-        ```
-        IdentityFile ~/.ssh/github_rsa
-        IdentityFile ~/.ssh/Magerton_Key_Pair.pem
-        ```
-    - Make sure permissions are correct for SSH folder & keys. See [Stackexchange](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). If using symlinked directory in Windows Subsystem for Linux (WSL) on Windows 10, might need to change permissions to read only on Windows side if can't do this in WSL.
-    - What files are:
-        + `github_rsa` and `*.pem` are private keys. KEEP SECURE--these are like your password
-        + `*.ppk` is PuTTy version of private key ([StackOverflow](https://stackoverflow.com/questions/20367694/whats-the-difference-between-ppk-and-pem-where-pem-is-stored-in-amazons-ec2))
-        + `*.pub` files are public keys. These are placed on server-side and used to verify that your private key is correct.
-3. Spin up an Ubuntu 16.04  or 18.04 image.  ~~Go to <http://www.louisaslett.com/RStudio_AMI/> and click on the AMI you want (first time only to set up)~~ 
-    - If permanent setup, use a smaller, cheaper one to get set up. You can save money by using a Spot instance, but could get booted if your maximum willingness to pay (bid) is too low. Otherwise, get as much power as you need.
-    - Make sure that you have enough drive storage (16Gb should be fine), and that the HTTP Protocol (port 80) is open in addition to SSH (port 22).
-5. SSH into the instance (right click on it & hit "connect" to get the terminal command, should be something like `ssh ubuntu@ec2-54-196-121-83.compute-1.amazonaws.com`). Note that the RStudio AMI has superuser `ubuntu`, not `root` as Connect page suggests.
+## Launch an EC2 Instance
 
-# Software installation
-
-1. On the remote, the directory `~/.ssh` has a file `authorized_keys`, which contains the public key counterpart for your private (local) `.pem` key. You'll want to add a github private key to this folder, and also deposit `authorized_keys` and your github private key in other uses (such as `rstudio`) with appropriate permissions. `ssh-copy-id` might be a better option to put a public key in another user's folder.
-    - On the local machine, navigate to your directory w/ relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
-    - Use `sftp` to put your `github_rsa` private key (and possibly also `config`) on the remote server
-    - Exit `sftp`, and then `ssh` into the remote
-    - Move the private key into .ssh: `mv github_rsa .ssh/`
-    - Check that the permissions are correct: `ls -al .ssh`. See [stackexchange](https://unix.stackexchange.com/questions/210228/add-a-user-wthout-password-but-with-ssh-and-public-key).
-    - You may need to make a new config file:
+1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
+2. Spin up an Amazon Linux 2 instance. The "compute optimized" tier is recommended, and you should not need more than 16GB of storage.
+3. Create a new SSH key pair when prompted, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
+    - **Your private key must be kept secure**. By convention it should be placed in your local `~/.ssh` directory and be protected by either `0400` or `0600` permissions [(note)](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). Your `~/.ssh` directory should have `0700` permissions.
+    - Private keys may take several different forms:
+        + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
+        + `*.key` - Alternate file extension for a PEM file only containing a private key.
+        + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
+    - Public keys utilize the `*.pub` extension, but when copied to a server are appended to your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you access to the server.
+        + If you are manually copying a new public key to an instance you already have access to, use the `ssh-copy-id` command [(note)](https://askubuntu.com/questions/4830/easiest-way-to-copy-ssh-keys-to-another-machine). Otherwise, the AWS setup guide handles this process for you.
+4. Connect to your EC2 instance via SSH. You can find the IP address/hostname of your instance in your AWS dashboard.
+    - Append the following to your local `~/.ssh/config` file, substituting the appropriate values as necessary:
         ```shell
-        echo IdentityFile ~/.ssh/github_rsa > .ssh/config
-        chown ubuntu .ssh/config
-        chmod 700 .ssh/config
+        Host your_server_name
+            HostName your_ip_address_or_hostname
+            User ec2-user
+            IdentityFile ~/.ssh/your_private_key.pem
         ```
-    - If you need to access git or other services, copy over .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
-<!--     - Copy contents of .ssh to remote user `rstudio` and set up. 
+    - Then, SSH into the server with `ssh your_server_name`. 
+    - Alternatively, you can skip the instructions above and connect directly with:
         ```shell
-        sudo cp -r .ssh ../rstudio/.ssh
-        sudo ls -al ../rstudio/.ssh
-        sudo chown -R rstudio:rstudio ../rstudio/.ssh
-        sudo chmod 700 ../rstudio/.ssh
-        ```--->
-2. Install needed programs
-    - Add `lftp` to machine to connect to Box.net accounts.
-        ```shell
-        sudo apt-get update
-        sudo apt-get install lftp
-        ```
-    - Add `git-lfs`.
-        + See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
-        ```shell
-        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-        sudo apt-get install git-lfs
-        git lfs install  # only run once for initial install
+        ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem
         ```
 
-# Julia setup
+## Install Software
 
-- Install julia
-    + `wget ` the file on <https://julialang.org/downloads/index.html>
-    + `tar -xvzf [download name]`
-    + Symlink to `/usr/local/bin` by running `sudo ln -s <where you extracted the julia archive>/bin/julia /usr/local/bin/julia`. Note, you'll want to use the FULL path of the directory julia got extracted to (eg, `/home/ME/juliaarchive/bin/julia`)
-- Update pkgs `sudo apt-get update`
-- Install build tools: `sudo apt-get install build-essential`
-- Install `sudo apt-get install hdf5-tools` from command line
+### Git
+- Install Git
+    ```shell
+    sudo yum install git
+    ```
+- To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen` and add the public key to your GitHub account. If you already have an authorized key pair, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
+    + On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
+    + Use `sftp` to put your `github_rsa` private key on the remote server.
+    + Exit `sftp`, and then `ssh` back into the server.
+    + Move the private key into .ssh: `mv github_rsa .ssh/`.
+    + Check that the permissions are correct: `ls -al .ssh`.
+
+### Git LFS
+- See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
+    ```shell
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
+    sudo yum install git-lfs
+    git lfs install # only run once for initial install
+    ```
+
+### LFTP
+- Install LFTP to connect to Box accounts.
+    ```shell
+    sudo yum install lftp
+    ```
+
+### Intel MKL
+- Intel MKL is [available for free](https://software.intel.com/en-us/articles/how-to-get-intel-mklippdaal) from Intel. The [yum repository](https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-yum-repo) can be easily added on an Amazon Linux 2 system:
+    ```shell
+    sudo yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
+    sudo rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+    ```
+- Multiple versions of MKL are available, but the latest can be easily installed:
+    ```shell
+    sudo yum install intel-mkl
+    ```
+
+### Julia (Build From Source)
+- First, install the necessary dependencies:
+    ```shell
+    sudo yum groupinstall 'Development Tools'
+    sudo yum install make gcc gcc-c++ libatomic python gcc-gfortran perl wget m4 patch pkgconfig
+    sudo yum autoremove cmake # default version is too old
+    ```
+- Download the Julia source code:
+    ```shell
+    wget https://github.com/JuliaLang/julia/archive/v1.0.1.tar.gz
+    ```
+- Extract Julia source code tarball and move to `/usr/local`:
+    ```shell
+    tar -xzvf v1.0.1.tar.gz
+    mv julia-1.0.1/ /usr/local/julia-1.0.1/
+    cd /usr/local/julia-1.0.1/
+    ```
+- (Optional) Enable MKL in Julia:
+    ```shell
+    source /opt/intel/bin/compilervars.sh intel64
+    echo "USE_INTEL_MKL = 1" > Make.user
+    ```
+- Use `make` to compile Julia:
+    ```shell
+    ./contrib/download_cmake.sh # force Julia to build an updated version of cmake
+    make -j4 # where '4' is the number of available CPU threads
+    ```
+- Symlink Julia to `/usr/local/bin`:
+    ```shell
+    ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
+    ```
+- Test MKL Integration in a Julia prompt:
+    ```julia
+    using LinearAlgebra
+    LinearAlgebra.BLAS.vendor()
+    ```
+
+### Julia Packages
 - Open up a julia prompt and install packages into the default folder
 
     ```bash
@@ -96,7 +135,9 @@ If you have suggestions, pull requests & edits are welcome!!
 - ~~Initialize package repo with `Pkg.init()` in julia~~
 - ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~
 
-# Setting up GUI/ remote desktop (RDP) for remote machine via secure SSH tunnel
+### R ??
+
+## Set up RDP for Remote Desktop Over SSH (untested on Amazon Linux)
 
 - Remote Desktop
     + Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
@@ -121,13 +162,13 @@ If you have suggestions, pull requests & edits are welcome!!
         sudo sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' libxcb.so.1
         ```
 
-# Subsequent work using terminal or REPL
+## Subsequent work using terminal or REPL
 
 1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
 2. Once your AMI is running (can take a bit), SSH into it & get to work or point your browser to the relevant IP address.
 3. To save intermediate log-files, you could use a `cron` job to run a script (named like `myscript.sh`, has a shebang w/ your shell path at the top--google it) that would ssh into the server & pipe log file to your home computer. (Might also be something as simple as a command -- no script needed) See <https://www.cyberciti.biz/faq/howto-use-tar-command-through-network-over-ssh-session/>
 
-# Using LFTP
+## Using LFTP
 
 - Alternately, transfer using `lftp` and Box.net. Note that special characters in password may have to be escaped or translated to HTML.
     ```shell
@@ -135,16 +176,13 @@ If you have suggestions, pull requests & edits are welcome!!
     mirror [project_dir_on_box]   [remote_project_dir]
     ```
 
-# X11 forwarding and OS X
+## X11 and macOS
 
-The above instructions are for Windows. Can try using X11 on a Mac or Linux box
+If required, X11 can be easily used to run remote GUI applications on macOS.
+- Install [XQuartz](https://www.xquartz.org/)
+- Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
 
-- Install `xpra` locally on OS X using Homebrew. See <https://github.com/google/homebrew-xpra>
-- Install `xpra` and `winswitch` on remote by following <http://winswitch.org/downloads/debian-repository.html?dist_select=xenial>. After installing `winswitch` as per direcions, run `apt-get install xpra` to install `xpra` and run `exit` to exit root.
->>>>>>> Stashed changes
-
-
-# Using EFS
+## Using EFS
 
 - Add an EFS instance (encrypted?)
 - Install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
@@ -154,14 +192,14 @@ The above instructions are for Windows. Can try using X11 on a Mac or Linux box
 - `sudo mount -t efs FILESYSTEMID:/ efs`
 - add line to `/etc/fstab`: `fs-59778a40:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
 
-# Notifications when usage falls
+## Notifications when usage falls
 
 Sometimes things error out... To be notified when CPU utilization falls,
 
 - Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
 - Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= 50 pct for less than 5 min.
 
-# Using nohup
+## Using nohup
 
 ```bash
 nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
