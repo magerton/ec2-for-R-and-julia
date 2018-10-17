@@ -1,158 +1,189 @@
----
-title: Mark's Guide to Amazon EC2 (and MS Azure) for R and Julia
-author: Mark Agerton
-date: 2017-06-12
----
+# Julia and R on Amazon EC2
 
-This is a guide on how to set up an Amazon EC2 cluster for use with RStudio and/or Julia. There are also instructions for setting up an MS Azure instance. 
+Thank you to @arnonerba for figuring out how to get Julia compiled with Intel MKL and major revisions below.
 
-For EC2, there are a few ways to get data on and off the servers in addition to the Dropbox directions provided by <http://www.louisaslett.com/RStudio_AMI/>. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning. Azure does not have spot-pricing like Amazon, but they do have 72 core instances that can be requested (bigger than 64 cores for Amazon, but no free credits for these).
+## Purpose
 
-The guide assumes you have some basic familiarity with using a linux-like terminal (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal will also work nicely.
+This guide explains how to set up a simple Amazon Linux 2 instance on EC2 for use with R and Julia. Renting EC2 space can be quite cheap, especially if you use a Spot Instance. Pricing is a continuous uniform-price auction, and if you are outbid, your instance is terminated w/out warning.
 
-If you have suggestions, pull requests & edits are welcome!!
+The guide assumes basic familiarity with a UNIX-like systems (e.g., navigating the file structure, copying, moving, ssh, etc). Note that Windows 10 now includes the "Windows Subsytem for Linux" (WSL), which provides a very nice terminal environment ([MSDN setup guide](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide)). The Git Bash terminal is also a good choice for Windows. macOS users may make use of the built-in macOS terminal.
 
-# Steps to get the EC2 running the first time
+If you have suggestions, pull requests & edits are welcome!
 
-1. Sign up for Amazon AWS account. Sign up at github.com for an education pack if eligible and you may get some free Amazon AWS credits.
-2. Get your SSH keys fixed on your computer so you can log in to your EC2 instances.
-    - You may need to add a file called `config` to local `~/.ssh` folder. For example it could be
-        ```
-        IdentityFile ~/.ssh/github_rsa
-        IdentityFile ~/.ssh/Magerton_Key_Pair.pem
-        ```
-    - Make sure permissions are correct for SSH folder & keys. See [Stackexchange](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). If using symlinked directory in Windows Subsystem for Linux (WSL) on Windows 10, might need to change permissions to read only on Windows side if can't do this in WSL.
-    - What files are:
-        + `github_rsa` and `*.pem` are private keys. KEEP SECURE--these are like your password
-        + `*.ppk` is PuTTy version of private key ([StackOverflow](https://stackoverflow.com/questions/20367694/whats-the-difference-between-ppk-and-pem-where-pem-is-stored-in-amazons-ec2))
-        + `*.pub` files are public keys. These are placed on server-side and used to verify that your private key is correct.
-3. Go to <http://www.louisaslett.com/RStudio_AMI/> and click on the AMI you want (first time only to set up)
-4. Start the instance in EC2.
-    - If permanent setup, use a smaller, cheaper one to get set up. You can save money by using a Spot instance, but could get booted if your maximum willingness to pay (bid) is too low. Otherwise, get as much power as you need.
-    - Make sure that you have enough drive storage, and that the HTTP Protocol (port 80) is open in addition to SSH (port 22).
-5. SSH into the instance (right click on it & hit "connect" to get the terminal command, should be something like `ssh ubuntu@ec2-54-196-121-83.compute-1.amazonaws.com`). Note that the RStudio AMI has superuser `ubuntu`, not `root` as Connect page suggests.
-6. Set up EC2 cluster how you want to and save as an AMI image so you can re-use without having to setup again. See [next section](#ec2-initial-setup).
+## Launch an EC2 Instance
 
-# EC2 initial setup
-
-1. On the remote, the directory `~/.ssh` has a file `authorized_keys`, which contains the public key for your private (local) `.pem` key. You'll want to add your github private key to this folder, and also deposit `authorized_keys` and your github private key in the user `rstudio` with appropriate permissions
-    - On the local machine, navigate to your directory w/ relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
-    - Use `sftp` to put your `github_rsa` private key (and possibly also `config`) on the remote server
-    - Exit `sftp`, and then `ssh` into the remote
-    - Move the private key into .ssh: `mv github_rsa .ssh/`
-    - Check that the permissions are correct: `ls -al .ssh`. See [stackexchange](https://unix.stackexchange.com/questions/210228/add-a-user-wthout-password-but-with-ssh-and-public-key).
-    - You may need to make a new config file:
+1. Sign up for an Amazon AWS account. Sign up for a [GitHub education pack](https://education.github.com/pack) if eligible and you may get some free Amazon AWS credits.
+2. Spin up an Amazon Linux 2 instance. The "compute optimized" tier is recommended, and you should not need more than 16GB of storage.
+3. Create a new SSH key pair when prompted, or choose one already saved in your AWS account. If you create a new pair, you will be asked to download your private key.
+    - **Your private key must be kept secure**. By convention it should be placed in your local `~/.ssh` directory and be protected by either `0400` or `0600` permissions [(note)](https://superuser.com/questions/215504/permissions-on-private-key-in-ssh-folder). Your `~/.ssh` directory should have `0700` permissions.
+    - Private keys may take several different forms:
+        + `*.pem` - Standard file format for cryptographic keys/certificates. AWS uses this format.
+        + `*.key` - Alternate file extension for a PEM file only containing a private key.
+        + `*.ppk` - Proprietary PuTTY format for private keys. PuTTY does not support the PEM format.
+    - Public keys utilize the `*.pub` extension, but when copied to a server are appended to your remote `~/.ssh/authorized_keys` file. The presence of your public key in this **remote** file grants you access to the server.
+        + If you are manually copying a new public key to an instance you already have access to, use the `ssh-copy-id` command [(note)](https://askubuntu.com/questions/4830/easiest-way-to-copy-ssh-keys-to-another-machine). Otherwise, the AWS setup guide handles this process for you.
+4. Connect to your EC2 instance via SSH. You can find the IP address/hostname of your instance in your AWS dashboard.
+    - Append the following to your local `~/.ssh/config` file, substituting the appropriate values as necessary:
         ```shell
-        echo IdentityFile ~/.ssh/github_rsa > .ssh/config
-        chown ubuntu .ssh/config
-        chmod 700 .ssh/config
+        Host your_server_name
+            HostName your_ip_address_or_hostname
+            User ec2-user
+            IdentityFile ~/.ssh/your_private_key.pem
         ```
-    - Copy contents of .ssh to remote user `rstudio` and set up. 
+    - Then, SSH into the server with `ssh your_server_name`. 
+    - Alternatively, you can skip the instructions above and connect directly with:
         ```shell
-        sudo cp -r .ssh ../rstudio/.ssh
-        sudo ls -al ../rstudio/.ssh
-        sudo chown -R rstudio:rstudio ../rstudio/.ssh
-        sudo chmod 700 ../rstudio/.ssh
+        ssh ec2-user@your_ip_address_or_hostname -i ~/.ssh/your_private_key.pem
         ```
-2. Install some programs
-    - Add `lftp` to machine to connect to Rice Univ's Box.net accounts.
-        ```shell
-        sudo apt-get update
-        sudo apt-get install lftp
-        ```
-    - Add `git-lfs`.
-        + See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
-        ```shell
-        curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-        sudo apt-get install git-lfs
-        git lfs install  # only run once for initial install
-        ```
-    - Install julia pkg `NLopt` with `Pkg.add("NLopt")` as `ubuntu` requires elevated permissions to install system libraries via Ubuntu package manager.
-        + Open Julia prompt by typing `julia`.
-        + Run `Pkg.add("NLopt").`
-    - Can now log in to `rstudio` account and get git working. Note that it's nicer to use `bash` since it has autocomplete.
-        ```shell
-        bash            # use bash
-        git lfs install # run as rstudio to initiall install (I think)
-        ```
-3. Set up R/Rstudio
-    - Point browser to rstudio server's IP address, for example: `http://ec2-54-196-121-83.compute-1.amazonaws.com/`
-    - Update the password in Rstudio to something reasonable by following directions.
-    - Add R packages. This will take time because they have to be compiled from source. For example
-        ```R
-        install.packages(c("data.table", "stringr", "haven", "ggplot2", "zoo", "lubridate", "xts", "Quandl", "ggthemes", "RColorBrewer", "quantmod", "viridis", "sp", "rgdal", "raster", "gridExtra", "ggmap", "mlogit", "grid", "coefplot", "texreg", "lme4", "nlme", "xtable"))
-        ```
-4. Add Julia packages in bulk
-    - Log back in to `rstudio` user via SSH. Open new Julia REPL (run `julia`)
-    - Initialize a Package repo: `Pkg.init()`
-    - Exit julia `exit()`
-    - Add some packages to the `~/.julia/v0.5/REQUIRE` file to install in bulk. (Can use `pico` or `vim` to do this.) Open Julia back up & run `Pkg.resolve()`. Note instructions on installing `NLopt` first as `ubuntu`. See [docs](https://docs.julialang.org/en/stable/manual/packages/#adding-and-removing-packages) re: bulk install
-5. Transfer necessary project files over SSH and unzip files:
-    - `tar cvz DIRECTORY/ | ssh ubunbtu@ec2ip "cd /wherever && tar xvz"`
-    - <http://unix.stackexchange.com/questions/10026/how-can-i-best-copy-large-numbers-of-small-files-over-scp>
-    - In reverse, adapt <http://meinit.nl/using-tar-and-ssh-to-efficiently-copy-files-preserving-permissions>
-    - ~~From your computer, make a gzipped tar file w/ everything you need to run your program: `tar -cvzf myfile.tar.gz [files/dirs to zip]`~~
-    - ~~Use `sftp` to transfer the file.~~
-        1. ~~Login to EC2 w/ sftp as you did w/ SSH, replacing `ssh` with `sftp`~~
-        2. ~~Once logged in, upload your file with `put myfile.tar.gz`~~
-        3. ~~Exit `sftp`~~
-    - ~~Unzip your files on Amazon~~
-        1. ~~`ssh` into your EC2 account~~
-        2. ~~Use `tar -xvzf myfile.tar.gz` to unzip~~
-    - `ssh` into your AMI to make sure stuff transferred
-6. Alternately, transfer using `lftp` and Box.net. Note that special characters in password may have to be escaped or translated to HTML.
+
+## Install Software
+
+### Git
+- Install Git
     ```shell
-    lftp -p 990 -u "netid@rice.edu,PASSWORD" ftps://ftp.box.com
-    mirror [project_dir_on_box]   [remote_project_dir]
+    sudo yum install git
     ```
-6. Optionally, you can also try setting up a remote desktop connection that can be re-used. See [section below](#remote-desktop-rdp-into-remote-machine-via-secure-ssh-tunnel)
-6. Save your instance as an AMI so you can use it again!!
-7. Terminate the instance (after verifying the AMI was made) so you can get a bigger, badder, better one.
+- To push and pull from GitHub over SSH, you will need another public/private key pair that is tied to your GitHub account [(note)](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/). If you do not have a key pair, generate one on your EC2 instance with `ssh-keygen` and add the public key to your GitHub account. If you already have an authorized key pair, copy the private key to your EC2 instance and place it in your remote `~/.ssh` directory:
+    + On the local machine, navigate to your directory with relevant keys (usually `~/.ssh` or `%USERPROFILE%/.ssh`).
+    + Use `sftp` to put your `github_rsa` private key on the remote server.
+    + Exit `sftp`, and then `ssh` back into the server.
+    + Move the private key into .ssh: `mv github_rsa .ssh/`.
+    + Check that the permissions are correct: `ls -al .ssh`.
 
-# Subsequent work using terminal or REPL
+### Git LFS
+- See [install guide](https://github.com/git-lfs/git-lfs#getting-started). I had to use [PackageCloud](https://packagecloud.io/github/git-lfs/install) to install from command line.
+    ```shell
+    curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | sudo bash
+    sudo yum install git-lfs
+    git lfs install # only run once for initial install
+    ```
+
+### LFTP
+- Install LFTP to connect to Box accounts.
+    ```shell
+    sudo yum install lftp
+    ```
+
+### Intel MKL
+- Intel MKL is [available for free](https://software.intel.com/en-us/articles/how-to-get-intel-mklippdaal) from Intel. The [yum repository](https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-yum-repo) can be easily added on an Amazon Linux 2 system:
+    ```shell
+    sudo yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
+    sudo rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+    ```
+- Multiple versions of MKL are available, but the latest can be easily installed:
+    ```shell
+    sudo yum install intel-mkl
+    ```
+
+### Julia (Build From Source)
+
+These instructions are for building Julia from source. Binary files are also available on the [Julia Downloads page](https://julialang.org/downloads/), and installation instructions are available [here](https://julialang.org/downloads/platform.html)
+
+- First, install the necessary dependencies:
+    ```shell
+    sudo yum groupinstall 'Development Tools'
+    sudo yum install make gcc gcc-c++ libatomic python gcc-gfortran perl wget m4 patch pkgconfig
+    sudo yum autoremove cmake # default version is too old
+    ```
+- Download the Julia source code:
+    ```shell
+    wget https://github.com/JuliaLang/julia/archive/v1.0.1.tar.gz
+    ```
+- Extract Julia source code tarball and move to `/usr/local`:
+    ```shell
+    tar -xzvf v1.0.1.tar.gz
+    mv julia-1.0.1/ /usr/local/julia-1.0.1/
+    cd /usr/local/julia-1.0.1/
+    ```
+- (Optional) Enable MKL in Julia:
+    ```shell
+    source /opt/intel/bin/compilervars.sh intel64
+    echo "USE_INTEL_MKL = 1" > Make.user
+    ```
+- Use `make` to compile Julia:
+    ```shell
+    ./contrib/download_cmake.sh # force Julia to build an updated version of cmake
+    make -j4 # where '4' is the number of available CPU threads
+    ```
+- Symlink Julia to `/usr/local/bin`:
+    ```shell
+    ln -s /usr/local/julia-1.0.1/julia /usr/local/bin/julia
+    ```
+- Test MKL Integration in a Julia prompt:
+    ```julia
+    using LinearAlgebra
+    LinearAlgebra.BLAS.vendor()
+    ```
+
+### Julia Packages
+- Open up a julia prompt and install packages into the default folder
+    ```bash
+    ]add AxisAlgorithms BenchmarkTools Calculus CategoricalArrays DataFrames Distributions FileIO Formatting GLM GR Gadfly IndirectArrays Interpolations JLD2 MixedModels NLSolversBase NLopt Optim PkgDev Plots Primes Profile ProgressMeter PyPlot RData Ratios StatsBase StatsFuns StatsModels
+    ```
+- ~~Initialize package repo with `Pkg.init()` in julia~~ (deprecated in v0.7)
+- ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~ (deprecated in v0.7)
+
+### R
+
+No guide yet for installing R or R Studio server. See [Louis Aslett's page](http://www.louisaslett.com/RStudio_AMI/)
+
+## Using Amazon EFS
+
+A great way to make sure log files persist across sessions and in case your spot instance gets killed is to use Amazon's EFS storage. EFS storage is accessible only by instances in the same security group in the same region. So to access files there, you have to go through a running instance: you cannot SSH directly to the the EFS drive.
+
+- Add an EFS instance (encrypted?)
+- Skip the following if running Amazon Linux. If running Ubuntu, 
+    + install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
+    + `apt-get install libssl-dev`
+    + Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
+- **Make sure that EFS and EC2 instances are in the same security group (SG), and that the SG has an inbound rule allowing NFS traffic from the same SG**
+- Run `sudo mount -t efs FILESYSTEMID:/ efs`
+- add line to `/etc/fstab`: `fs-[INSTANCE_ID]:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
+
+## How to get stuff done in the terminal/REPL
 
 1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
 2. Once your AMI is running (can take a bit), SSH into it & get to work or point your browser to the relevant IP address.
-3. To save intermediate log-files, you could use a `cron` job to run a script (named like `myscript.sh`, has a shebang w/ your shell path at the top--google it) that would ssh into the server & pipe log file to your home computer. (Might also be something as simple as a command -- no script needed) See <https://www.cyberciti.biz/faq/howto-use-tar-command-through-network-over-ssh-session/>
 
-# Subsequent work connecting local Atom to Remote Julia
-You can use local instance of Atom & remote server. The [Docs](http://docs.junolab.org/latest/man/faq.html#Connecting-to-an-external-julia-session-on-a-remote-machine-1) are a tad confusing. Here are (revised) steps. Note that on Windows 10, port-forwarding can be done through the WSL (sweet!)
+## Set up notifications when your job dies
 
-1. Launch local Atom/Julia session
-2. Bring up command palette (`cmd/ctrl-shift-p`) and open `Julia Client: Connect External Process`
-3. The local Atom/Juno tells you `[LOCALPORT_NUM]` where Atom/Juno is listening. **The message Julia lets you copy does not need to be run locally, and the port it lists is for the local machine, not the remote's port. You can safely ignore the message.**
-4. Set up port forwarding via SSH. Enter the following into local terminal and log in to remote with port forwarding.
+Sometimes things error out. We have not yet figured out how to get the instance to email us when a job errors out. However, to be notified when an instance's CPU utilization falls below a threshold,
+
+- Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
+- Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= X pct for less than Y min.
+
+## Using nohup
+
+`nohup` is a way to run a script that will stay running after your terminal session is killed and have the script dump all STDOUT and STDERR to a log file. For example, we can run
+
+```bash
+nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
+```
+
+where `JOBNAME` is to be filled in by you.
+
+## Using LFTP
+
+- One can use `lftp` to transfer files between AWS instances and Box.net in lieu of Git and git-lfs. Note that special characters in password may have to be escaped or translated to HTML.
     ```shell
-    ssh -R [REMOTEPORT_NUM]:localhost:[LOCALPORT_NUM] rstudio@EC2_IP_ADDRESS
+    lftp -p 990 -u "username@institution,PASSWORD" ftps://ftp.box.com
+    mirror [project_dir_on_box]   [remote_project_dir]
     ```
-5. Now, on the remote, open a Julia REPL by typing `julia`
-6. In the remote Julia REPL, type `using Juno; Juno.connect([REMOTEPORT_NUM])`
-7. A local Atom notification will pop up that "Julia is connected"
-8. The local Atom/Julia instance is now running on the EC2 cluster. You should be able to see this by evaluating `pwd()` in the local Atom instance. Note that any libraries, files, etc that you load must be on the Remote server now in this session---the remote cannot see local files.
 
+## X11 and macOS
 
-# Azure installation
-- This is an abbreviated guide to using Microsoft's Azure cloud: <https://portal.azure.com/>. Setup is quite similar to Amazon's EC2. Note that to get access to larger instances (for example, the 72 core Fs72-v2 instance), you'll need to add a "Pay-as-you-go" subscription and request a quota increase from customer support for the number of cores you can run at a time. The quota increase can take a couple of days.
-- Add a Linux instance, setting the SSH public key to the one you have on your local machine. 
-- SSH into an instance
-- If you need to access git or other services, copy over .ssh files to `~/.ssh`. `chmod` the directory to 700 and files to 600.
-- Install julia
-    + `wget ` the file on <https://julialang.org/downloads/index.html>
-    + `tar -xvzf [download name]`
-    + Symlink to `/usr/local/bin` by running `sudo ln -s <where you extracted the julia archive>/bin/julia /usr/local/bin/julia`. Note, you'll want to use the FULL path of the directory julia got extracted to (eg, `/home/ME/juliaarchive/bin/julia`)
-- Update pkgs `sudo apt-get update`
-- Install build tools: `sudo apt-get install build-essential`
-- Initialize package repo with `Pkg.init()` in julia
-- Install `sudo apt-get install hdf5-tools` from command line
-- Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.
-- You are good to go!
-- Note: Some Julia packages may need to be precompiled to avoid errors (I found this out when a program crashed on a call to the sparse linear algebra library).
+If required, X11 can be easily used to run remote GUI applications on macOS.
+- Install [XQuartz](https://www.xquartz.org/)
+- Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
 
-# Remote desktop (RDP) into remote machine via secure SSH tunnel
-- Remote Desktop
+## Remote Desktop Over SSH
+
+Sometimes it is nice to use a GUI. This is pretty straightforward to do on AWS or Azure Ubuntu instances. Note that the instructions below are not tested on AWS Amazon linux.
+
+- Install Remote Desktop
     + Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
     + On local machine, create ssh tunnel to remote with port forwarding `ssh -L [LOCALPORT]:localhost:[3389] username@remoteip`. Can do this with terminal, Bash for Windows, or Putty.
-    + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
+    + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`. I have sometimes found that I need to do this step to set up a password each time I launch an instance... even if the AMI I'm launching had a password.
     + Open Remote Desktop Connection (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
     + To be able to reconnect to the same desktop, see <http://c-nergy.be/blog/?p=5305> and <https://askubuntu.com/questions/133343/how-do-i-set-up-xrdp-session-that-reuses-an-existing-session>. Basically, the idea is to edit the xrdp ini file to allow this. Run `sudo [gedit/pico/vim] /etc/xrdp/xrdp.ini` and change section `[xrdp1]` where it says `port=-1` to `port=ask-1`. When logging in for the first time, leave the port as `-1` and note the port number you get (will default to `5910`). Then on subsquent logins, change the port to whater the previous one was (I it *should* default to `5910`). Sessions seem to persist even when the SSH tunnel is closed.
 - Install the gnome terminal `sudo apt-get install gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new terminal window
