@@ -1,8 +1,6 @@
 # Julia and R on Amazon EC2
 
-| Authors | Date |
-| --- | --- |
-| Mark Agerton & Arnon Erba | 2018-10-12 |
+Thank you to @arnonerba for figuring out how to get Julia compiled with Intel MKL and major revisions below.
 
 ## Purpose
 
@@ -78,6 +76,9 @@ If you have suggestions, pull requests & edits are welcome!
     ```
 
 ### Julia (Build From Source)
+
+These instructions are for building Julia from source. Binary files are also available on the [Julia Downloads page](https://julialang.org/downloads/), and installation instructions are available [here](https://julialang.org/downloads/platform.html)
+
 - First, install the necessary dependencies:
     ```shell
     sudo yum groupinstall 'Development Tools'
@@ -116,33 +117,73 @@ If you have suggestions, pull requests & edits are welcome!
 
 ### Julia Packages
 - Open up a julia prompt and install packages into the default folder
-
     ```bash
     ]add AxisAlgorithms BenchmarkTools Calculus CategoricalArrays DataFrames Distributions FileIO Formatting GLM GR Gadfly IndirectArrays Interpolations JLD2 MixedModels NLSolversBase NLopt Optim PkgDev Plots Primes Profile ProgressMeter PyPlot RData Ratios StatsBase StatsFuns StatsModels
-
-    dev ssh://git@github.com/magerton/CountPlus.git
-    dev ssh://git@github.com/magerton/Halton.git
-    dev ssh://git@github.com/magerton/JuliaTex.jl.git
-    dev ssh://git@github.com/magerton/GenGlobal.jl.git
-    dev ssh://git@github.com/magerton/MarksRandomEffects.git
-    dev ssh://git@github.com/magerton/OrderedResponse.jl.git
-    dev ssh://git@github.com/magerton/MarkovTransitionMatrices.jl.git
-    dev ssh://git@github.com/magerton/ShaleDrillingModel.jl.git
-    dev ssh://git@github.com/magerton/ShaleDrillingData.jl.git
-    dev ssh://git@github.com/magerton/ShaleDrillingEstimation.jl.git
-    dev ssh://git@github.com/magerton/ShaleDrillingPostEstimation.jl.git
     ```
-- ~~Initialize package repo with `Pkg.init()` in julia~~
-- ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~
+- ~~Initialize package repo with `Pkg.init()` in julia~~ (deprecated in v0.7)
+- ~~Bulk install by updating `REQUIRE` in `~/.julia/v0.x/REQUIRE` and running `Pkg.resolve()`. You may need to run julia as `sudo` with elevated priveleges, but hopefully not.~~ (deprecated in v0.7)
 
-### R ??
+### R
 
-## Set up RDP for Remote Desktop Over SSH (untested on Amazon Linux)
+No guide yet for installing R or R Studio server
 
-- Remote Desktop
+## Using Amazon EFS
+
+A great way to make sure log files persist across sessions and in case your spot instance gets killed is to use Amazon's EFS storage. EFS storage is accessible only by instances in the same security group in the same region. So to access files there, you have to go through a running instance: you cannot SSH directly to the the EFS drive.
+
+- Add an EFS instance (encrypted?)
+- Skip if running Amazon Linux. If running Ubuntu, 
+    + install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
+    + `apt-get install libssl-dev`
+    + Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
+- **Make sure that EFS and EC2 instances are in the same security group (SG), and that the SG has an inbound rule allowing NFS traffic from the same SG**
+- Run `sudo mount -t efs FILESYSTEMID:/ efs`
+- add line to `/etc/fstab`: `fs-[INSTANCE_ID]:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
+
+## How to get stuff done in the terminal/REPL
+
+1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
+2. Once your AMI is running (can take a bit), SSH into it & get to work or point your browser to the relevant IP address.
+
+## Set up notifications when your job dies
+
+Sometimes things error out. We have not yet figured out how to get the instance to email us when a job errors out. However, to be notified when an instance's CPU utilization falls below a threshold,
+
+- Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
+- Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= X pct for less than Y min.
+
+## Using nohup
+
+`nohup` is a way to run a script that will stay running after your terminal session is killed and have the script dump all STDOUT and STDERR to a log file. For example, we can run
+
+```bash
+nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
+```
+
+where `JOBNAME` is to be filled in by you.
+
+## Using LFTP
+
+- One can use `lftp` to transfer files between AWS instances and Box.net in lieu of Git and git-lfs. Note that special characters in password may have to be escaped or translated to HTML.
+    ```shell
+    lftp -p 990 -u "username@institution,PASSWORD" ftps://ftp.box.com
+    mirror [project_dir_on_box]   [remote_project_dir]
+    ```
+
+## X11 and macOS
+
+If required, X11 can be easily used to run remote GUI applications on macOS.
+- Install [XQuartz](https://www.xquartz.org/)
+- Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
+
+## Remote Desktop Over SSH
+
+Sometimes it is nice to use a GUI. This is pretty straightforward to do on AWS or Azure Ubuntu instances. Note that the instructions below are not tested on AWS Amazon linux.
+
+- Install Remote Desktop
     + Install `xrdp` and `xcfe4` software as per <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop>. We'll connect over SSH, so no need to open a special RDP port.
     + On local machine, create ssh tunnel to remote with port forwarding `ssh -L [LOCALPORT]:localhost:[3389] username@remoteip`. Can do this with terminal, Bash for Windows, or Putty.
-    + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`
+    + After connecting to remote instance, set a password on the remote machine so that the RDP can log in `sudo setpasswd [yourname]`. I have sometimes found that I need to do this step to set up a password each time I launch an instance... even if the AMI I'm launching had a password.
     + Open Remote Desktop Connection (search for mstsc.exe on Windows) & log in to `localhost:[LOCALPORT]`
     + To be able to reconnect to the same desktop, see <http://c-nergy.be/blog/?p=5305> and <https://askubuntu.com/questions/133343/how-do-i-set-up-xrdp-session-that-reuses-an-existing-session>. Basically, the idea is to edit the xrdp ini file to allow this. Run `sudo [gedit/pico/vim] /etc/xrdp/xrdp.ini` and change section `[xrdp1]` where it says `port=-1` to `port=ask-1`. When logging in for the first time, leave the port as `-1` and note the port number you get (will default to `5910`). Then on subsquent logins, change the port to whater the previous one was (I it *should* default to `5910`). Sessions seem to persist even when the SSH tunnel is closed.
 - Install the gnome terminal `sudo apt-get install gnome-terminal`, or something better than the `xcfe` terminal. This should swap out automatically if you open a new terminal window
@@ -161,46 +202,3 @@ If you have suggestions, pull requests & edits are welcome!
         cp /usr/lib/x86_64-linux-gnu/libxcb.so.1
         sudo sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' libxcb.so.1
         ```
-
-## Subsequent work using terminal or REPL
-
-1. Launch your AMI from the EC2 console: `AMI > Select on your AMI > Under "Actions," select "Spot Request"` Request a big instance, and set the MAX price you are willing to pay per hour (usually it's much lower than this)
-2. Once your AMI is running (can take a bit), SSH into it & get to work or point your browser to the relevant IP address.
-3. To save intermediate log-files, you could use a `cron` job to run a script (named like `myscript.sh`, has a shebang w/ your shell path at the top--google it) that would ssh into the server & pipe log file to your home computer. (Might also be something as simple as a command -- no script needed) See <https://www.cyberciti.biz/faq/howto-use-tar-command-through-network-over-ssh-session/>
-
-## Using LFTP
-
-- Alternately, transfer using `lftp` and Box.net. Note that special characters in password may have to be escaped or translated to HTML.
-    ```shell
-    lftp -p 990 -u "netid@rice.edu,PASSWORD" ftps://ftp.box.com
-    mirror [project_dir_on_box]   [remote_project_dir]
-    ```
-
-## X11 and macOS
-
-If required, X11 can be easily used to run remote GUI applications on macOS.
-- Install [XQuartz](https://www.xquartz.org/)
-- Log out and log back in, then connect using `ssh -YC user@server` in Terminal to enable X11 forwarding.
-
-## Using EFS
-
-- Add an EFS instance (encrypted?)
-- Install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
-- `apt-get install libssl-dev`
-- Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
-- **Make sure that EFS and EC2 instances are in the same security group, and that the SG has an inbound rule allowing NFS traffic from the same SG** (currently this is group 4)
-- `sudo mount -t efs FILESYSTEMID:/ efs`
-- add line to `/etc/fstab`: `fs-59778a40:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
-
-## Notifications when usage falls
-
-Sometimes things error out... To be notified when CPU utilization falls,
-
-- Create a subscription at [AWS SNS](https://console.aws.amazon.com/sns/v2/home)
-- Under EC2 instances > Monitoring, click "create alarm". Set alarm for CPU utilization <= 50 pct for less than 5 min.
-
-## Using nohup
-
-```bash
-nohup julia --optimize=3 ~/dev-pkgs/ShaleDrillingEstimation/example/run_estimator.jl > ~/efs-ubuntu/JOBNAME\ "$(TZ=America/Los_Angeles date +on\ %Y-%m-%d\ at\ %Hh%Mm)"\ by\ ${MYIP}.out 2>&1 &
-```
