@@ -125,14 +125,14 @@ These instructions are for building Julia from source. Binary files are also ava
 
 ### R
 
-No guide yet for installing R or R Studio server
+No guide yet for installing R or R Studio server. See [Louis Aslett's page](http://www.louisaslett.com/RStudio_AMI/)
 
 ## Using Amazon EFS
 
 A great way to make sure log files persist across sessions and in case your spot instance gets killed is to use Amazon's EFS storage. EFS storage is accessible only by instances in the same security group in the same region. So to access files there, you have to go through a running instance: you cannot SSH directly to the the EFS drive.
 
 - Add an EFS instance (encrypted?)
-- Skip if running Amazon Linux. If running Ubuntu, 
+- Skip the following if running Amazon Linux. If running Ubuntu, 
     + install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
     + `apt-get install libssl-dev`
     + Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
