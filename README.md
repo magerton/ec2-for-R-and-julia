@@ -132,13 +132,16 @@ No guide yet for installing R or R Studio server. See [Louis Aslett's page](http
 A great way to make sure log files persist across sessions and in case your spot instance gets killed is to use Amazon's EFS storage. EFS storage is accessible only by instances in the same security group in the same region. So to access files there, you have to go through a running instance: you cannot SSH directly to the the EFS drive.
 
 - Add an EFS instance (encrypted?)
-- Skip the following if running Amazon Linux. If running Ubuntu, 
-    + install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
-    + `apt-get install libssl-dev`
-    + Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
+- Install EFS utilities
+    + If running Amazon Linux: `sudo yum install -y amazon-efs-utils`
+    + If running Ubuntu:
+        * install `amazon-efs-utils` (manually?) using <https://docs.aws.amazon.com/efs/latest/ug/using-amazon-efs-utils.html#installing-other-distro>
+        * `apt-get install libssl-dev`
+        * Upgrade `stunnel` and symlinmk it `sudo ln -s /usr/local/bin/stunnel /bin/stunnel` ~~and/or `sudo ln -s /usr/bin/stunnel /bin/stunnel`~~
 - **Make sure that EFS and EC2 instances are in the same security group (SG), and that the SG has an inbound rule allowing NFS traffic from the same SG**
-- Run `sudo mount -t efs FILESYSTEMID:/ efs`
-- add line to `/etc/fstab`: `fs-[INSTANCE_ID]:/ /mnt/efs efs defaults,_netdev,nofail 0 0`
+- One-time mounting can be done with `sudo mount -t efs fs-[INSTANCE_ID]:/ [TARGET MOUNT POINT]`
+- Permanent mounting can be done by opening `/etc/fstab` with `sudo` privileges and adding a new line to: `fs-[INSTANCE_ID]:/ [TARGET MOUNT POINT SUCH AS /mnt/efs] efs defaults,_netdev,nofail 0 0`
+- It can be nice to symlink the efs volume to a directory: `ln -s /mnt/efs efsdir`.
 
 ## How to get stuff done in the terminal/REPL
 
